@@ -17,6 +17,39 @@
 
 namespace fs = std::experimental::filesystem;
 
+//Return a vector that contains the date and logger info from a line
+std::vector<std::string> filter_string(std::string line){
+    std::string filt = "(...)\\s+(\\d\\d)\\s+(\\d\\d\\d\\d)\\s+(\\d\\d):(\\d\\d):(\\d\\d)";
+    std::smatch m;
+    std::vector<std::string> returnMe;
+
+    std::string date = line.substr(26, 26);
+    std::string comp_logger = line.substr(50, 31);
+
+
+    //seperate date from rest of the line
+    returnMe.push_back(date);
+
+    //save log's computer info to a seperate string 
+    returnMe.push_back(comp_logger);
+
+    //save combined
+    returnMe.push_back(date+ " " +comp_logger);
+
+    //std::cout << "\nCurrent line is " << line << std::endl;
+    bool x = std::regex_search(date, m, std::regex(filt));
+    if(x){
+        returnMe.push_back("1");
+        //std::cout << date << "passed the filter" << std::endl;
+        return returnMe;
+    } else {
+        std::cout << date << " did not pass the filter." << std::endl;
+        returnMe.clear();
+        returnMe.push_back("0");
+    }
+    return returnMe;
+}
+
 
 //create empty file within specified dir
 void createFile( std::string path, std::string name){
@@ -36,12 +69,16 @@ void writeFile(std::string path, std::string name, std::vector<std::string>& con
 
     std::cout << "Size is " << content.size() << " and the name of the data is " << fileName << std::endl;
 
-    fileHandle.open(fileName, std::ios::app);
+
+    std::cout << "File is open? " <<fileHandle.is_open() << std::endl;
     for(int i = 0; i < content.size(); i++){
         std::string con = content.at(i);
         //std::cout << " i is " << i << std::endl;
         //fileHandle << content.at(i) << std::endl;
-        fileHandle << i << std::endl;
+        //fileHandle << i << std::endl;
+
+        //std::cout << con << std::endl;
+        fileHandle << con << std::endl;
         
     }
     fileHandle.close();
@@ -62,19 +99,26 @@ std::vector<std::string> findFiles(std::string rootDir, std::string pattern)
     return returnMe;
 } 
 
-//read from file, plug into DateTime, work with 
 void readFile (std::string path, std::vector<std::string>& destination)
 {
     std::string fileName = path;
     std::ifstream fileHandle(fileName);
     std::string line;
     while (std::getline(fileHandle, line)){
-        //std::cout << line << std::endl;
         destination.push_back(line);
     }
     fileHandle.close();
 }
 
+void printFile (std::string path){
+    std::string fileName = path;
+    std::ifstream fileHandle(fileName);
+    std::string line;
+    while (std::getline(fileHandle, line)){
+        std::cout << line << std::endl;
+    }
+    fileHandle.close();
+}
 void deleteFile(std::string path) {
     std::cout << "deleting " << path << std::endl;
     fs::path p(path);
@@ -93,43 +137,26 @@ void sortFilesFromRaw (std::vector<std::string> files, std::string fileName){
 
     std::string filter = "(...)\\s+(\\d\\d)\\s+(\\d\\d\\d\\d)\\s+(\\d\\d):(\\d\\d):(\\d\\d)";
 
-    //see what is contained in files
-    std::cout << "file list within sortFilesFromRaw is size.. " << files.size() << "and contains..." << std::endl;
-    //for(int i = 0; i < files.size(); i ++){
-      //  std::cout << ".............." << files.back();
-      //  files.pop_back();
-    //}
-
-
     while(files.size() > 0){
-        std::string f = files.back();//access an element
+        std::string f = files.back();
         readFile(f, fileLines);
-
-        std::cout << "size of fileLines is..." << fileLines.size() << std::endl;
-        //redun
-        //std::cout << "pushing " << rippedLines.back() << "to fileLines which now contains " << fileLines.back() << std::endl;
-        //std::cout << "filelines.back is ..." << fileLines.back() << std::endl;
-
         files.pop_back();
     }
 
-        for(int i = 0; i < fileLines.size(); i++){
-            //std::cout << "current iteration is..................................... " << i << std::endl;
-            std::smatch m;
-            bool x = std::regex_search(fileLines.at(i), m, std::regex(filter));
+    std::vector<std::string>::iterator it;
+    int i = 0;
+    for(it = fileLines.begin(); it != fileLines.end(); it++, i++){
 
-            if(!x){
-                std::cout << "line... " << fileLines.at(i) << " doesn't match." << std::endl;
-               // fileLines.erase(i+1);
-            }
+        std::vector<std::string> line = filter_string(fileLines.at(i));
+
+        if(line[3] == "1"){
+
+            //replace with 
+            fileLines.at(i) == line[2];
+        } else {
         }
-
-    //test that fileLines has content to write to files
-    //std::vector<std::string> copy(fileLines);
-    //std::cout << "size of filelines is " << fileLines.size() << std::endl;
-    //for(int i = 0; i < fileLines.size(); i++){
-      //  std::cout << i << ":::::::::::::::::::::::::::::;......" << fileLines.at(i) << std::endl;;
-    //}
+        //fileLines.erase(it);
+    }
 
     std::cout << "creating file now after filter." << std::endl;
     //createFile("/home/ian/C programs/SortDateProject", fileName);
@@ -142,10 +169,13 @@ void sortFilesFromRaw (std::vector<std::string> files, std::string fileName){
     fileLines.clear();
 
     //sort within file using dt
+
 }
 
 //combine files into a single file sorted by computer groups, delete the individual files for memory
-//void sortFilesFromGroup()
+void sortFilesFromGroup(){
+
+}
 
 int main(int argc, char **argv){
 
@@ -163,11 +193,11 @@ int main(int argc, char **argv){
 
     //takes the vector's list of files and returns a name of a file that holds the sorted dates
     sortFilesFromRaw(vifmgr_files, "vifs.txt");
-    //sortFilesFromRaw(mgwd_files, "mgwds.txt");
+    sortFilesFromRaw(mgwd_files, "mgwds.txt");
 
 //readd from the files to ensure they were written to
     //std::cout << "reading the files before deletion \n\n" << std::endl;
-    //readFile("/home/ian/C programs/SortDateProject/vifs.txt");
+    //printFile("/home/ian/C programs/SortDateProject/vifs.txt");
     //readFile("home/ian/C programs/SortDateProject/mgwds.txt");
 
 //for now delete, but in future 
