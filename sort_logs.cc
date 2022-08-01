@@ -13,41 +13,55 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <tuple>
 #include "DateTime.h"
 
 namespace fs = std::experimental::filesystem;
+class logline {
 
-//Return a vector that contains the date and logger info from a line
-std::vector<std::string> filter_string(std::string line){
+    public:
+        DateTime dt;
+        std::string node;
+        std::string module;
+        std::string logtext;
+
+        bool operator < (const logline& rhs){
+            return dt < rhs.dt;
+        } 
+
+        std::string to_string() {
+            return dt.to_string() + " " +node +" " +module+" "+logtext;
+            //work with module + log_txt some way with |
+            //iterate array call to_string
+            //make sure that garbage doesn't get through
+        }
+};
+
+
+
+std::tuple <logline, std::string, std::string, bool> filter_string(std::string line){
     std::string filt = "(...)\\s+(\\d\\d)\\s+(\\d\\d\\d\\d)\\s+(\\d\\d):(\\d\\d):(\\d\\d)";
     std::smatch m;
-    std::vector<std::string> returnMe;
+    bool success = false;
+    logline ll;
 
     std::string date = line.substr(26, 26);
     std::string comp_logger = line.substr(50, 31);
 
-
-    //seperate date from rest of the line
-    returnMe.push_back(date);
-
-    //save log's computer info to a seperate string 
-    returnMe.push_back(comp_logger);
-
-    //save combined
-    returnMe.push_back(date+ " " +comp_logger);
-
+    //std::cout << "before filter check" << std::endl;
     //std::cout << "\nCurrent line is " << line << std::endl;
     bool x = std::regex_search(date, m, std::regex(filt));
     if(x){
-        returnMe.push_back("1");
-        //std::cout << date << "passed the filter" << std::endl;
-        return returnMe;
+        success = true;
+        ll.node = date;
+        ll.module = comp_logger;
+        ll.logtext = line.substr(81, 40);//40 is made up, need specific #
+        //setup node, module, log_text
+
     } else {
         std::cout << date << " did not pass the filter." << std::endl;
-        returnMe.clear();
-        returnMe.push_back("0");
     }
-    return returnMe;
+    return {ll, date, comp_logger, success};
 }
 
 
@@ -104,7 +118,10 @@ void readFile (std::string path, std::vector<std::string>& destination)
     std::string fileName = path;
     std::ifstream fileHandle(fileName);
     std::string line;
+
     while (std::getline(fileHandle, line)){
+        auto [a,b,c,d] =  filter_string(line);
+        std::cout << "logline..." << a.node << " " << a.module << std::endl;
         destination.push_back(line);
     }
     fileHandle.close();
@@ -133,40 +150,45 @@ void deleteFile(std::string path) {
 //returns a sorted txt of the files listed in the vector. It is assumed that all the files are from the same computer that reported
 void sortFilesFromRaw (std::vector<std::string> files, std::string fileName){
     std::vector<std::string> fileLines;
+    std::vector<logline> log_line;
     DateTime dt;
+
+
 
     std::string filter = "(...)\\s+(\\d\\d)\\s+(\\d\\d\\d\\d)\\s+(\\d\\d):(\\d\\d):(\\d\\d)";
 
+    //change to use it to start from front
     while(files.size() > 0){
         std::string f = files.back();
         readFile(f, fileLines);
         files.pop_back();
     }
 
+    std::cout << "iterator" << std::endl;
     std::vector<std::string>::iterator it;
-    int i = 0;
-    for(it = fileLines.begin(); it != fileLines.end(); it++, i++){
+    //int i = 0;
+    for(it = fileLines.begin(); it != fileLines.end(); it++){
 
-        std::vector<std::string> line = filter_string(fileLines.at(i));
+        auto [line_date, line_complog, line_combined, success] = filter_string(*it);
 
-        if(line[3] == "1"){
-
+        if(success){
             //replace with 
-            fileLines.at(i) == line[2];
+            *it == line_combined;
+
         } else {
         }
         //fileLines.erase(it);
     }
-
+    std::cout << "after filter" << std::endl;
     std::cout << "creating file now after filter." << std::endl;
     //createFile("/home/ian/C programs/SortDateProject", fileName);
 
-    std::cout << "Size of the file before writing is..." << fileLines.size() << std::endl;
+    std::cout << "Size of the file before writing is..." << log_line.size() << std::endl;
 
     //std::cout << "Write iteration... " << i <<" ..............." << fileLines.back() << std::endl;
     writeFile("/home/ian/C programs/SortDateProject", fileName, fileLines);
 
-    fileLines.clear();
+    //fileLines.clear();
 
     //sort within file using dt
 
@@ -195,7 +217,7 @@ int main(int argc, char **argv){
     sortFilesFromRaw(vifmgr_files, "vifs.txt");
     sortFilesFromRaw(mgwd_files, "mgwds.txt");
 
-//readd from the files to ensure they were written to
+//read from the files to ensure they were written to
     //std::cout << "reading the files before deletion \n\n" << std::endl;
     //printFile("/home/ian/C programs/SortDateProject/vifs.txt");
     //readFile("home/ian/C programs/SortDateProject/mgwds.txt");
