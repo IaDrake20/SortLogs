@@ -193,12 +193,29 @@ void sortFilesFromRaw (std::vector<std::string> files, std::string fileName){
     //sort within file using dt
 
 }
+    std::cout << "after filter" << std::endl;
+    std::cout << "creating file now after filter." << std::endl;
+    //createFile("/home/ian/C programs/SortDateProject", fileName);
+
+    std::cout << "Size of the file before writing is..." << log_line.size() << std::endl;
+
+    //std::cout << "Write iteration... " << i <<" ..............." << fileLines.back() << std::endl;
+    writeFile("/home/ian/C programs/SortDateProject", fileName, fileLines);
+
+    //fileLines.clear();
+
+    //sort within file using dt
+
+}
+
+//combine files into a singl
 
 //combine files into a single file sorted by computer groups, delete the individual files for memory
 void sortFilesFromGroup(){
 
 }
 
+//expects root user to search, string to name file (txt auto included)
 int main(int argc, char **argv){
 
     //in future use path of current file to have a broad search for where logs are stored. Once they are found paths can be inserted
@@ -207,15 +224,34 @@ int main(int argc, char **argv){
     std::vector<std::string> vifmgr_files;
     std::vector<std::string> mgwd_files;
 
-    vifmgr_files = findFiles("/home/dan/projects/c++/log_file_processing/asup","vifmgr.log.");
-    mgwd_files = findFiles("/home/dan/projects/c++/log_file_processing/asup", "mgwd.log.");
+    //vifmgr_files = findFiles("/home/dan/projects/c++/log_file_processing/asup","vifmgr.log.");
+    //mgwd_files = findFiles("/home/dan/projects/c++/log_file_processing/asup", "mgwd.log.");
 
-    std::cout << "vigmgr files list is size..." << vifmgr_files.size() << std::endl;
-    std::cout << "mgwd files list is size..." << mgwd_files.size() << std::endl;
+    std::vector<std::string> files = findFiles("/home/"+*argv[0], "mgwd_test_file.txt");
+
+    std::cout << "after filter" << std::endl;
+    std::cout << "creating file now after filter." << std::endl;
+    //createFile("/home/ian/C programs/SortDateProject", fileName);
+
+    std::cout << "Size of the file before writing is..." << log_line.size() << std::endl;
+
+    //std::cout << "Write iteration... " << i <<" ..............." << fileLines.back() << std::endl;
+    writeFile("/home/ian/C programs/SortDateProject", fileName, fileLines);
+
+    //fileLines.clear();
+
+    //sort within file using dt
+
+
+
+//combine files into a singl
+    //std::cout << "vigmgr files list is size..." << vifmgr_files.size() << std::endl;
+    //std::cout << "mgwd files list is size..." << mgwd_files.size() << std::endl;
 
     //takes the vector's list of files and returns a name of a file that holds the sorted dates
-    sortFilesFromRaw(vifmgr_files, "vifs.txt");
-    sortFilesFromRaw(mgwd_files, "mgwds.txt");
+    //sortFilesFromRaw(vifmgr_files, "vifs.txt");
+    //sortFilesFromRaw(mgwd_files, "mgwds.txt");
+    sortFilesFromRaw(files, *argv[1] + ".txt");
 
 //read from the files to ensure they were written to
     //std::cout << "reading the files before deletion \n\n" << std::endl;
