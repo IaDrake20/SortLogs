@@ -25,11 +25,55 @@ std::vector<std::string> findFiles(std::string rootDir, std::string pattern)
     return returnMe;
 }
 
+//method to create file
+//create empty file within specified dir
+void createFile(std::string path, std::string name, std::vector<std::string>& lines)
+{
+    std::cout << "creating " << name << std::endl;
+    std::ofstream outputFile;
+
+    outputFile.open(path + "/" + name, std::ios::out);
+
+    for (auto x = lines.begin(); x != lines.end(); ++x) {
+        outputFile << *x;
+    }
+    outputFile.close();
+}
+
 
 
 //method to read file
+void readFile(std::string path, std::string name)
+{
+    std::string fileName;
+    fileName = path + "/" + name;
+    std::ifstream fileHandle(fileName);
+    std::string line;
+    while (std::getline(fileHandle, line)) {
+        std::cout << line << std::endl;
+    }
+    fileHandle.close();
+}
+
+//method to open file and write to it
+
+//method that writes to a file
+void writeFile(std::string path, std::string name)
+{
+    std::string fileName;
+    fileName = path + "/" + name;
+    std::ofstream fileHandle(fileName);
+    for (int i = 5; i > 0; --i) {
+        fileHandle << "line " << i << std::endl;
+    }
+    fileHandle.close();
+}
 
 //method to edit pattern with <-- --> surrounding
+void addPattern(std::string path, std::string pattern) {
+
+
+}
 
 
 //accept 3 inputs, file path, name of new file, pattern to search for
