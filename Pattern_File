@@ -1,0 +1,41 @@
+#include "run_me.h"
+#include <iostream>
+#include <fstream>
+#include <experimental/filesystem>
+#include <string>
+#include <vector>
+
+namespace fs = std::experimental::filesystem;
+
+std::string dirName;
+
+//method to find file to read from
+std::vector<std::string> findFiles(std::string rootDir, std::string pattern)
+{
+    std::vector<std::string> returnMe;
+    std::cout << "looking for " << pattern << std::endl;
+    for (auto entry : fs::recursive_directory_iterator(rootDir)) {
+        std::string fname = entry.path();
+        if (fname.find(pattern) != std::string::npos) {
+            std::cout << entry << std::endl;
+            returnMe.push_back(entry.path());
+        }
+    }
+
+    return returnMe;
+}
+
+
+
+//method to read file
+
+//method to edit pattern with <-- --> surrounding
+
+
+//accept 3 inputs, file path, name of new file, pattern to search for
+int main(int argc, char** argv) {
+	std::string file_path, new_file, pattern;
+	file_path = argv[1];
+	new_file = argv[2];
+	pattern = argv[3];
+}
